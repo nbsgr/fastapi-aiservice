@@ -83,16 +83,37 @@ Return DIRECT for:
         return "DIRECT"
 
 # ==========================================
-# HEALTH CHECK
+# ROOT & HEALTH CHECK ENDPOINTS
 # ==========================================
 @app.get("/")
 def root():
     return {
         "status": 200,
-        "message": "FastAPI AI Service is online",
+        "message": "FastAPI AI Service is online and running successfully!",
         "provider": os.getenv("AI_PROVIDER", "inceptionlabs"),
         "default_model": os.getenv("DEFAULT_MODEL", "mercury-2")
     }
+
+@app.get("/api/health-check")
+def health_check():
+    """Health check endpoint that verifies AI provider connectivity and returns available models"""
+    try:
+        ai_client = get_client()
+        models = ai_client.models.list()
+        model_names = [m.id for m in models.data]
+        return {
+            "status": 200,
+            "message": "AI Service Health Check Passed",
+            "provider": os.getenv("AI_PROVIDER", "inceptionlabs"),
+            "default_model": os.getenv("DEFAULT_MODEL", "mercury-2"),
+            "available_models": model_names
+        }
+    except Exception as e:
+        return {
+            "status": 500,
+            "message": "AI Service Health Check Failed",
+            "error": str(e)
+        }
 
 @app.get("/api/models")
 def list_models():
