@@ -142,14 +142,23 @@ def retrieve_context(query:str,scrape_result:dict):
     #Get the query embeddings
     query_embedding=generate_embedding(query)
     if not query_embedding:
-        logger.error("Failed to get embeddings")
+        logger.warning("[RAG] Embeddings unavailable (e.g. running in serverless), using direct text snippets fallback")
+        fallback_texts = []
+        sources = []
+        for doc in documents[:3]:
+            txt = doc.get("text", "")
+            u = doc.get("url", "")
+            if txt:
+                fallback_texts.append(f"Source ({u}):\n{txt[:1200]}")
+                sources.append(u)
         return {
-            "success":False,
-            "context":"",
-            "sources":[],
-            "count":0,
-            "timeMs":int((time.time()-start_time)*1000)
+            "success": True,
+            "context": "\n\n".join(fallback_texts),
+            "sources": sources,
+            "count": len(sources),
+            "timeMs": int((time.time() - start_time) * 1000)
         }
+
     #documents to chunks
     all_chunks=[]
     for document in documents:

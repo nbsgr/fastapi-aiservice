@@ -15,25 +15,28 @@ logger = logging.getLogger(__name__)
 
 # Default config
 DEFAULT_BASE_URL = os.getenv("AI_BASE_URL", "https://api.inceptionlabs.ai/v1")
-DEFAULT_API_KEY = os.getenv("AI_API_KEY", "")
 DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "mercury-2")
 
-# Shared OpenAI Client
-client = OpenAI(
-    base_url=DEFAULT_BASE_URL,
-    api_key=DEFAULT_API_KEY
-)
-
 # ==========================================
-# GET CUSTOM CLIENT (SUPPORTS PER-REQUEST OVERRIDE)
+# GET CUSTOM CLIENT (SUPPORTS PER-REQUEST OVERRIDE & LAZY INIT)
 # ==========================================
 def get_client(base_url: str = None, api_key: str = None):
-    if base_url or api_key:
-        return OpenAI(
-            base_url=base_url or DEFAULT_BASE_URL,
-            api_key=api_key or DEFAULT_API_KEY
-        )
-    return client
+    resolved_key = (
+        api_key
+        or os.getenv("AI_API_KEY")
+        or os.getenv("OPENAI_API_KEY")
+        or "dummy-key"
+    )
+    resolved_base_url = (
+        base_url
+        or os.getenv("AI_BASE_URL")
+        or DEFAULT_BASE_URL
+    )
+    return OpenAI(
+        base_url=resolved_base_url,
+        api_key=resolved_key
+    )
+
 
 # ==========================================
 # STREAM OPENAI CHAT COMPLETION AS NDJSON

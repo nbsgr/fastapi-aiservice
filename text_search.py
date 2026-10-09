@@ -1,8 +1,15 @@
 import time
 import logging
-from ddgs import DDGS
-from urllib.parse import urlparse
-from urllib.parse import urlunparse
+from urllib.parse import urlparse, urlunparse
+
+try:
+    from duckduckgo_search import DDGS
+except ImportError:
+    try:
+        from ddgs import DDGS
+    except ImportError:
+        DDGS = None
+
 
 # =====================================================
 # CONFIG
@@ -112,6 +119,16 @@ def search_web(query:str,MAX_RESULTS:int=MAX_RESULTS):
                     f"max_results={MAX_RESULTS} "
                     f"MAX_TITLE_LENGTH={MAX_TITLE_LENGTH} "
                     )
+        if DDGS is None:
+            logger.warning("[SEARCH] DDGS library not available")
+            return {
+                "success": False,
+                "error": "DDGS library not available",
+                "results": [],
+                "count": 0,
+                "domains": [],
+                "timeMs": int((time.time() - start_time) * 1000)
+            }
         #python itself automatically creates and manages object with keyword
         with DDGS() as ddgs:
             results=ddgs.text(query,region=SEARCH_REGION,
