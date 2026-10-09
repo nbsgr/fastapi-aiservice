@@ -1,0 +1,8 @@
+fastapi==0.143.0
+uvicorn==0.54.0
+openai==3.26.1
+httpx==0.28.1
+requests==2.34.2
+beautifulsoup4==4.15.0
+duckduckgo-search==8.1.1
+python-dotenv==1.2.4
